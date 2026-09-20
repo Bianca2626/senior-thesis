@@ -1,0 +1,19 @@
+<!DOCTYPE html> <html>
+     <head>
+         <title>Applicant Survey</title> 
+        </head>
+        
+        <body> 
+            <h2>Chat</h2> 
+            <div id="chat"></div> 
+            input id="message" placeholder="Ask a question">
+             <button onclick="sendMessage()">Send
+
+            </button>
+             <hr>
+              <h2>Survey</h2>
+               <form id="survey"> 
+                <input id="applicantId" placeholder="Applicant ID" >
+                 <br><br>
+                  <label>Why are you interested?</label> <br> <textarea id="q1"></textarea> <br><br> <label>Tell us about your experience.</label> <br> <textarea id="q2"></textarea> <br><br> <button type="submit">Submit</button> </form> <p id="status"></p> <script> async function sendMessage() { const message = document.getElementById("message").value; const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: message }) }); const data = await response.json(); document.getElementById("chat").innerHTML += "<p><b>You:</b> " + message + "</p>" + "<p><b>Bot:</b> " + data.reply + "</p>"; } document .getElementById("survey") .addEventListener("submit", async (event) => { event.preventDefault(); const response = await fetch("/api/survey", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ applicant_id: document.getElementById( "applicantId" ).value, answers: { q1: document.getElementById("q1").value, q2: document.getElementById("q2").value } }) }); const data = await response.json(); if (data.success) { document.getElementById("status").innerText = "Survey submitted successfully."; } }); </script> </body> 
+</html>
