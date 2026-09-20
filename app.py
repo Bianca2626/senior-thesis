@@ -4,17 +4,22 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from supabase import create_client
-
-from ollamabot import generate_reply
-
+from openai import OpenAI
 
 app = FastAPI()
 
-
+# Supabase
 supabase = create_client(
     os.environ["SUPABASE_URL"],
     os.environ["SUPABASE_SECRET_KEY"]
 )
+
+# OpenAI
+client = OpenAI(
+    api_key=os.environ["OPENAI_API_KEY"]
+)
+
+MODEL_NAME = os.environ["MODEL_NAME"]
 
 
 class ChatRequest(BaseModel):
@@ -33,12 +38,19 @@ def home():
 
 @app.post("/api/chat")
 def chat(request: ChatRequest):
-
     try:
-        reply = generate_reply(request.message)
+        response = client.responses.create(
+            model=MODEL_NAME,
+            instructions="""
+            You are a supportive conversational assistant.
+            Respond briefly and conversationally.
+            Ask one thoughtful follow-up question at a time.
+            """,
+            input=request.message
+        )
 
         return {
-            "reply": reply
+            "reply": response.output_text
         }
 
     except Exception as e:
@@ -46,22 +58,19 @@ def chat(request: ChatRequest):
 
         raise HTTPException(
             status_code=500,
-            detail="Could not generate chatbot response."
+            detail="Could not generate response."
         )
 
 
 @app.post("/api/survey")
 def submit_survey(request: SurveyRequest):
-
     try:
         supabase.table("survey_responses").insert({
             "applicant_id": request.applicant_id,
             "answers": request.answers
         }).execute()
 
-        return {
-            "success": True
-        }
+        return {"success": True}
 
     except Exception as e:
         print(e)
