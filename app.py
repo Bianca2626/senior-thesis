@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -6,6 +7,7 @@ from pydantic import BaseModel
 from supabase import create_client
 from openai import OpenAI
 
+load_dotenv()
 app = FastAPI()
 
 # Supabase
@@ -65,7 +67,7 @@ def chat(request: ChatRequest):
 @app.post("/api/survey")
 def submit_survey(request: SurveyRequest):
     try:
-        supabase.table("survey_responses").insert({
+        supabase.table("chatbot_responses").insert({
             "applicant_id": request.applicant_id,
             "answers": request.answers
         }).execute()

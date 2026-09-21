@@ -4,3 +4,4 @@ supabase
 openai
 python-dotenv
 ollama
+
